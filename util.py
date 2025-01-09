@@ -24,10 +24,18 @@ class DataHandler():
             return dt.replace(tzinfo=None)
         self.stedin_data['hist_timestamp'] = self.stedin_data['hist_timestamp'].apply(remove_timezone)
         self.stedin_data = self.stedin_data.set_index('hist_timestamp')
-        stedin_coords = self.stedin_coords[file_name]
+
         del self.stedin_data['locatie'], self.stedin_data['spanning(kV)'], self.stedin_data['transformator']
         self.stedin_data['time_units'] = np.arange(len(self.stedin_data))
         
+        self.NED_data = pd.read_csv(file_path + '\\NED-dataset\\dataset.csv')
+        self.NED_data['validto (UTC)'] = pd.to_datetime(self.NED_data['validto (UTC)'])
+        self.NED_data.set_index('validto (UTC)',inplace=True)
+        self.NED_data = self.NED_data.resample('15min').interpolate()
+        mask = (self.NED_data.index >= self.stedin_data.index[0]) & (self.NED_data.index <= self.stedin_data.index[-1])
+        self.NED_data = self.NED_data.loc[mask]
+
+        '''
         # get the entire database
         self.KNMI_data = pd.read_csv(file_path + '\\KNMI-dataset\\dataset.csv')
         del self.KNMI_data['NAME'],self.KNMI_data['ALTITUDE']
@@ -46,6 +54,7 @@ class DataHandler():
         mask = (self.KNMI_data.index >= self.stedin_data.index[0]) & (self.KNMI_data.index <= self.stedin_data.index[-1])
         self.KNMI_data = self.KNMI_data.loc[mask]
         del self.KNMI_data['LOCATION'], self.KNMI_data['LATITUDE'], self.KNMI_data['LONGITUDE']
+        '''
 
     def get_objective(self):
         self.stedin_data['jumps'] = np.abs(np.sign(self.stedin_data['avg_value'].diff()).diff())
@@ -59,12 +68,12 @@ class DataHandler():
         self.stedin_data['number_tap_changes'] = np.cumsum(self.stedin_data['jumps'])
         
     def concat_data(self):
-        self.data = self.stedin_data.join(self.KNMI_data)
+        self.data = self.stedin_data.join(self.NED_data)
 
     def return_data(self):
         return self.data
     
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    DH = DataHandler('Bodegraven.csv',' TR2')
+    DH = DataHandler('Bodegraven.csv',' TR2', '50-10')
     data = DH.return_data()

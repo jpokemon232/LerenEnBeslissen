@@ -7,17 +7,18 @@ from prophet import Prophet
 DH = DataHandler('Dordrecht.csv','TR2','50-13')
 data = DH.return_data()
 
-m = Prophet()
+m = Prophet(
+    n_changepoints=0,
+    yearly_seasonality=True,
+    weekly_seasonality=True,
+    daily_seasonality=True
+)
 data['hist_timestamp'] = data.index
 prophet_data = data.copy()
 prophet_data.rename(columns={'number_tap_changes':'y','hist_timestamp':'ds'},inplace=True)
 
-prophet_data = prophet_data.iloc[:-4*24*30]
-print(prophet_data)
-
-regressors = ['avg_value','max_value','min_value','Q_GLOB_10','QN_GLOB_10','QX_GLOB_10','SQ_10']
-#for regressor in regressors:
-#    m.add_regressor(name=regressor)
+#prophet_data = prophet_data.iloc[:-4*24*30]
+#print(prophet_data)
 
 m.fit(prophet_data)  # df is a pandas.DataFrame with 'y' and 'ds' columns
 prediction = m.predict(prophet_data)
