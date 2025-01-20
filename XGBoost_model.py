@@ -5,16 +5,13 @@ import matplotlib.pyplot as plt
 DH = DataHandler('Dordrecht.csv','TR2','50-13')
 data = DH.return_data()
 
-
-data['test'] = 0
-num = 1
+num = 0
 new_data = []
 for index in range(len(data)):
     num += 1
     if data['jumps'].iloc[index] == 1:
         new_data.append(num)
-        num = 1
-
+        num = 0
 
 X = []
 Y = []
