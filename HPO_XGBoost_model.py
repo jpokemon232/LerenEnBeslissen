@@ -17,7 +17,7 @@ def objective(trial):
         'subsample': trial.suggest_float('subsample', 0.1, 0.7),
         'colsample_bynode': trial.suggest_float('colsample_bynode', 0.1, 1.0),
         'reg_lambda': trial.suggest_float('reg_lambda', 0.001, 25, log=True),
-        'learning_rate': trial.suggest_float('learning_rate', 0.08, 1, log=True),
+        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.8, log=True),
         'gamma':trial.suggest_float('gamma', 0.001, 25, log=True),
         'reg_alpha':trial.suggest_float('reg_alpha', 0.001, 25, log=True)
     }
@@ -33,6 +33,7 @@ def objective(trial):
 
 if __name__ == '__main__':
     train_percentage = 0.7
+    length = 4
 
     DH = DataHandler('Dordrecht.csv','TR2','50-13')
     data = DH.return_data()
@@ -47,28 +48,32 @@ if __name__ == '__main__':
 
     X = []
     Y = []
-    for index in range(len(new_data)-32):
-        X.append(new_data[index:index+32])
-        Y.append(new_data[index+32])
+    for index in range(len(new_data)-length):
+        X.append(new_data[index:index+length])
+        Y.append(new_data[index+length])
 
     X = np.array(X)
     Y = np.array(Y)
     X_train, Y_train,X_test,Y_test = X[:int(len(X)*train_percentage)],Y[:int(len(Y)*train_percentage)],X[int(len(X)*train_percentage):],Y[int(len(Y)*train_percentage):]
     
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
-    study_name = "xgboost_study_v14"  # Unique identifier of the study.
+    study_name = "xgboost_study_v22"  # Unique identifier of the study.
     storage_name = "sqlite:///HPO//{}.db".format(study_name)
     study = optuna.create_study(
         study_name=study_name,
         storage=storage_name,
-        sampler=optuna.samplers.TPESampler(n_startup_trials=1000),
-        pruner=optuna.pruners.MedianPruner(n_startup_trials=10,n_warmup_steps=1000,interval_steps=2,n_min_trials=4),
+        sampler=optuna.samplers.TPESampler(n_startup_trials=100),
+        pruner=optuna.pruners.MedianPruner(n_startup_trials=10,n_warmup_steps=100),
         direction='maximize'
     )
-    study.optimize(objective, n_trials=5000,show_progress_bar=True)
+    study.optimize(objective, n_trials=500,show_progress_bar=True)
+    # length = 32 for v1 - v15, length = 4 is better
     #v1: n_startup_trials=100, n_startup_trials=100
     #v2: n_startup_trials=10, n_startup_trials=10,n_warmup_steps=100 (really good)
     #v4: n_startup_trials=10, n_startup_trials=100,n_warmup_steps=10
     #v5: n_startup_trials=100, n_startup_trials=100,n_warmup_steps=10
     #v6: n_startup_trials=100, n_startup_trials=10,n_warmup_steps=100
     #v7: n_startup_trials=10, n_startup_trials=10,n_warmup_steps=100 
+    # v3 is made with RMSE loss of test data, using model.best_value directly
+    # v13 n_startup_trials=1000, n_startup_trials=10,n_warmup_steps=1000
+    # we went in total to v15, but nothing better was found

@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 DH = DataHandler('Dordrecht.csv','TR2','50-13')
 data = DH.return_data()
 
+lags = 4
 num = 0
 new_data = []
 for index in range(len(data)):
@@ -15,9 +16,9 @@ for index in range(len(data)):
 
 X = []
 Y = []
-for index in range(len(new_data)-32):
-    X.append(new_data[index:index+32])
-    Y.append(new_data[index+32])
+for index in range(len(new_data)-lags):
+    X.append(new_data[index:index+lags])
+    Y.append(new_data[index+lags])
 
 X = np.array(X)
 Y = np.array(Y)
