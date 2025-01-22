@@ -62,4 +62,3 @@ if __name__ == '__main__':
     storage_name = "sqlite:///HPO//{}.db".format(study_name)
     study = optuna.create_study(study_name=study_name, storage=storage_name)
     study.optimize(objective, n_trials=250)
-    optuna.load_study()
