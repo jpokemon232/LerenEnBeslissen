@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from util import DataHandler
 
-train_percentage = 0.9
+train_percentage = 0.7
 
 DH = DataHandler('Bodegraven.csv',' TR2','50-10')
 data = DH.return_data()

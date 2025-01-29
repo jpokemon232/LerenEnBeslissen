@@ -23,9 +23,12 @@ def objective(trial):
         "interval_width": 0.8,
         "uncertainty_samples": 1000
     }
+    use_mcmc = trial.suggest_categorical('use_mcmc',[True,False])
+    if use_mcmc == False:
+        param['mcmc_samples'] = 0
     try:
         scores = []
-        for _ in range(5):
+        for _ in range(4*use_mcmc + 1):
             m = Prophet(**param)
             m.fit(train_data)
             #calculating the test losses
@@ -45,20 +48,16 @@ def objective(trial):
 if __name__ == '__main__':
     train_percentage = 0.7
 
-    DH = DataHandler('Dordrecht.csv','TR2','50-13')
+    DH = DataHandler('Bodegraven.csv',' TR2','50-10')
     data = DH.return_data()
 
-    m = Prophet(
-        weekly_seasonality=True,
-        daily_seasonality=True
-    )
     data['hist_timestamp'] = data.index
     data = data.copy()
     data.rename(columns={'number_tap_changes':'y','hist_timestamp':'ds'},inplace=True)
 
     train_data, test_data = data.iloc[:int(len(data)*train_percentage)],data.iloc[int(len(data)*train_percentage):]
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
-    study_name = "prophet_study"  # Unique identifier of the study.
+    study_name = "prophet_study_v2"  # Unique identifier of the study.
     storage_name = "sqlite:///HPO//{}.db".format(study_name)
     study = optuna.create_study(study_name=study_name, storage=storage_name)
     study.optimize(objective, n_trials=250)
