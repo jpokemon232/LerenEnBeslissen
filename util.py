@@ -19,7 +19,7 @@ class DataHandler():
         self.stedin_data = self.stedin_data[self.stedin_data['transformator'] == transformator_name]
         self.stedin_data = self.stedin_data[self.stedin_data['spanning(kV)'] == spanning]
         self.stedin_data['hist_timestamp'] = pd.to_datetime(self.stedin_data['hist_timestamp'])
-    
+
         def remove_timezone(dt):
             return dt.replace(tzinfo=None)
         self.stedin_data['hist_timestamp'] = self.stedin_data['hist_timestamp'].apply(remove_timezone)
@@ -27,14 +27,13 @@ class DataHandler():
 
         del self.stedin_data['locatie'], self.stedin_data['spanning(kV)'], self.stedin_data['transformator']
         self.stedin_data['time_units'] = np.arange(len(self.stedin_data))
-        
+      
         self.NED_data = pd.read_csv(file_path + '\\NED-dataset\\dataset.csv')
         self.NED_data['validto (UTC)'] = pd.to_datetime(self.NED_data['validto (UTC)'])
         self.NED_data.set_index('validto (UTC)',inplace=True)
         self.NED_data = self.NED_data.resample('15min').interpolate()
         mask = (self.NED_data.index >= self.stedin_data.index[0]) & (self.NED_data.index <= self.stedin_data.index[-1])
         self.NED_data = self.NED_data.loc[mask]
-
         '''
         # get the entire database
         self.KNMI_data = pd.read_csv(file_path + '\\KNMI-dataset\\dataset.csv')
@@ -68,7 +67,7 @@ class DataHandler():
         self.stedin_data['number_tap_changes'] = np.cumsum(self.stedin_data['jumps'])
         
     def concat_data(self):
-        self.data = self.stedin_data.join(self.NED_data)
+        self.data = self.stedin_data
 
     def return_data(self):
         return self.data

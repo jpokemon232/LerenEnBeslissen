@@ -3,18 +3,18 @@ from util import DataHandler
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-L_data = pd.read_csv('H:\\project\\ND-LerenEnBeslissen\\stedin-dataset\\Middelharnis.csv')
+L_data = pd.read_csv('H:\\project\\ND-LerenEnBeslissen\\stedin-dataset\\Bodegraven.csv')
 print(np.unique(L_data['locatie']))
 print(np.unique(L_data['spanning(kV)']))
 print(np.unique(L_data['transformator']))
-params = {'n_estimators': 318, 'grow_policy': 'lossguide', 'tree_method': 'hist', 'max_depth': 3, 'min_child_weight': 0.3867219450425303, 'subsample': 0.9446541028519908, 'colsample_bynode': 0.34797604051723946, 'reg_lambda': 3.177784399546179e-05, 'learning_rate': 0.016035447591742306, 'gamma': 7.059667726759788e-05, 'reg_alpha': 0.011148300861008344}
+params = {'n_estimators': 2127, 'grow_policy': 'lossguide', 'tree_method': 'hist', 'max_depth': 5, 'min_child_weight': 0.12234282541130108, 'subsample': 0.8791414381241174, 'colsample_bynode': 0.19280543754613436, 'reg_lambda': 0.00028695083939858114, 'learning_rate': 0.2553754647207112, 'gamma': 0.0007969600374182776, 'reg_alpha': 0.000601477957437568}
 
 train_percentage = 0.7
 for loc in np.unique(L_data['locatie']):
     for span in np.unique(L_data['spanning(kV)']):
         for trans in np.unique(L_data['transformator']):
             try:
-                length = 36
+                length = 32
                 num = 0
                 new_data = []
                 DH = DataHandler(loc + '.csv',trans,span)
